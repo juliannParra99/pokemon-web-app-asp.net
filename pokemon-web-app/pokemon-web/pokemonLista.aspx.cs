@@ -1,0 +1,24 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using negocio;
+using dominio;
+
+namespace pokemon_web
+{
+    public partial class pokemonLista : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            PokemonNegocio negocio = new PokemonNegocio();
+
+            dgvPokemons.DataSource = negocio.listaConSP();
+            //crea la estructura de la tabla con los datos pasados al data source y carga los pokemons.
+            dgvPokemons.DataBind();
+
+        }
+    }
+}

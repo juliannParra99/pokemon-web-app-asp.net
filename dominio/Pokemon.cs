@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 
 namespace dominio
 {
-    //en esta parte del proyecto se reutilizan proyectos de dominio y negocio de un proyecto anterior
-    //para reutilizar la misma logica y adaptarla  progresivamente al ambito web
+    //en este ejemplo vamo a utilizar un procedimiento almacenado(STORE PROCEDURE) que es una especie de funcion
+    //que va a estar prearmada en la base de datos y se puede llamar: se puede hacer muy compleja, pero vamos
+    //a hacer una sencilla que nos permita listar los elementos; vamos a tener un procedimiento almacenado, osea
+    //una pequeña funcion que nos permita listar los datos, las columnas que necesitamos. ESTO NOS EVITA
+    //TENER QUE USAR LA CONSULTA ENVEVIDA, aunque no es muy acosnejable tener mucha logica en la base de datos. 
     public class Pokemon
     {
         public int Id { get; set; }

@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pokemon-web", "pokemon-web\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dominio", "..\dominio\dominio.csproj", "{1123F810-EF66-4379-8221-7D0BFE96C701}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "negocio", "..\negocio\negocio.csproj", "{974D539C-098C-4E52-89FB-7B433F91DC0C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "negocio", "..\..\Curso C# Nivel 2\Actividades-y-otros-repositorios-para-proyectos\ejemplos-ado-net\negocio\negocio.csproj", "{974D539C-098C-4E52-89FB-7B433F91DC0C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
