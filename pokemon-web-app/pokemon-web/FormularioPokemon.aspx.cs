@@ -8,6 +8,9 @@ using System.Web.UI.WebControls;
 using dominio;
 using negocio;
 
+//en este ejemplo se va a m,odifica el formulario para que cuando queremos ingresar un nuevo pokemon podamos hacerlo
+//pero que cuando pulsemos en el boton 'modificar' se cargue el formulario con el id del pokemon seleccionado, para
+//asi precargar los valores y modificar aquello que queremos modificar. 
 
 namespace pokemon_web
 {
@@ -15,52 +18,87 @@ namespace pokemon_web
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            //el usuario no va a tener que modificar el id ni colocarlo asique lo desactivamos
             txtId.Enabled = false;
-            //siempre hacer manejo de excepciones
             try
             {
-                
-                //Vamos a cargar los desplegables de tipo y de debilidad
-
-                //si no es postback: para que no se traigan los datos nuevamente
+                //Configuracion inicial de la pantalla
                 if (!IsPostBack)
                 {
                     ElementoNegocio negocio = new ElementoNegocio();
-                    //quiero traer  los valores de tipo y debilidad, que ambos estan en el objeto elemento : entonces creo la lista y le guardo los elementos
+                    //quiero traer  los valores de tipo y debilidad, que ambos estan en el objeto elemento : 
                     List<Elemento> lista = negocio.listar();
 
-                    //ahora cargo los desplegables 
+                    //cargo los desplegables 
                     ddlTipo.DataSource = lista;
-                    //DataTextField se refiere al aspecto visual (frontend) y descriptivo de las opciones en el desplegable, mientras que el DataValueField se refiere al valor seleccionado
-                    //y se utiliza para interactuar con la lógica del backend y realizar acciones adicionales basadas en esa selección.
-
-                    //se les asigna las propiedades del objeto que es el origen de datos(Elemento): Id va  a devolver el
-                    //elemento con ese ID, para poder trabajar con ese Id
                     ddlTipo.DataValueField = "Id";
-                    //De esta manera, estás indicando que el texto descriptivo de cada opción en el DropDownList se obtendrá de la 
-                    //    propiedad "Descripcion" en el origen de datos.
                     ddlTipo.DataTextField = "Descripcion";
 
                     ddlTipo.DataBind();
 
                     //Ahora para la debilidad
-
                     ddlDebilidad.DataSource = lista;
                     ddlDebilidad.DataValueField = "Id";
-                    // estás indicando que el texto descriptivo de cada opción en el DropDownList se obtendrá de la propiedad "Descripcion"
                     ddlDebilidad.DataTextField = "Descripcion";
                     ddlDebilidad.DataBind();
-
-                    //ahora configuro el evento del click abajo: para que permita agregar pokemons
                 }
+
+                //configuracion si estamos modificando. 
+
+                //pregunto si cuando se accede al formulario se lo hizo trayendo un id de  un pokemon en la url
+                //osea, si el query string tiene esa variable. Si la tiene es modificar.
+                //aca necesito el pokemon que coincide con el id para modificarlo; podria tener el objeto pokemon
+                //en Session pero no seria conveniente si manejo una gran cantidad de datos, asique lo manejo directamente 
+                //desde la db; traigo la lista de  datos de la db directamente
+
+                //si tiene ID voy a ir a la db a traer el listado de pokemons
+                //podria crear un metodo que me trajera el pokemon filtrando por id pero no viene al caso ahora.]
+                
+                //sigo en pokemonNegocio
+
+
+                //operador ternario: si viene con id lo guardo, sino lo dejo vacio
+                string id = Request.QueryString["id"] != null ? Request.QueryString["id"].ToString() : "" ;
+                //y tengo que agregarle que ejecuto la logica cuando no es postback, de lo contrario, cuando
+                //toque en un pokemon para modificar, y rellene con los datos actualizados, antes de que
+                //se ejecute el boton aceptar la pantalla va a ejecutar el postaback de nuevo con los datos
+                //originales, por lo que los datos seguirian siendo los mismos, cosa que no quiero.
+                if (id != "" && !IsPostBack)
+                {
+                    PokemonNegocio negocio = new PokemonNegocio();
+                    //obtengo la lista que va a tener un solo elemento y que viene desde el metodo listar()
+                    List<Pokemon> lista = negocio.listar(id);
+                    //obtengo el pokemon de la lista, y como solo hya uno siempre va a estar en el indice 0
+                    Pokemon seleccionado =lista[0];
+
+                    //OTRA MANERA DE HACER LO QUE HACEN LAS ULTIMAS DOS LINEAS Y HACERLO EN 1 SOLA SERIA 
+                    //por que se que negocio listar da una lista, entonces le digo directo el indice que quiero y lo asigno.
+                    //Pokemon seleccionado = (negocio.listar(id))[0]
+
+                    //precargar todos los campos del formulario de modificacion.
+
+                    txtId.Text = id;
+                    //le asigno los valrores del pokemon seleccionado.
+                    txtNombre.Text = seleccionado.Nombre;
+                    txtNumero.Text = seleccionado.Numero.ToString();
+                    txtDescripcion.Text = seleccionado.Descripcion;
+                    txtImagenUrl.Text = seleccionado.UrlImagen;
+
+                    //le cargo los desplegables con los valores precargados
+                    ddlDebilidad.SelectedValue = seleccionado.Debilidad.Id.ToString();
+                    ddlTipo.SelectedValue = seleccionado.Tipo.Id.ToString();
+
+                    //evento para que se precargue la iamgen: tambien en lugar de forzar el metodo podria ponerlo en un nuevo metodo
+                    txtImagenUrl_TextChanged(sender, e);
+
+                }
+
+
             }
             catch (Exception ex )
             {
                 //puedo guardar el error en la session
                 Session.Add("error", ex);
                 throw ex;
-                //posteriormente puedo hacer una redireccion a otra pantalla.
             }
         }
 
@@ -80,24 +118,29 @@ namespace pokemon_web
                 nuevo.Descripcion = txtDescripcion.Text;
                 nuevo.UrlImagen = txtImagenUrl.Text;
 
-                //tipo es un objeto de tipo elemento, por lo que tengo que crear ese objeto (instanciarlo).
-                //esto por que cuando selecciono el valor del desplegable ya no es mas un objeto, sino texto 
-                //plano. Por lo que creo el objeto, y al tipo.Id le asigno el valor de backend(id) que se
-                //asigno al desplegable. 
+                 
                 nuevo.Tipo = new Elemento();
-                //le asigno el value del campo seleccionado en el desplegable.Y lo hago int, por que al 
-                //renderizarse en web se vuelve texto plano. Va a guardar el Int.
                 nuevo.Tipo.Id = int.Parse(ddlTipo.SelectedValue);
 
                 nuevo.Debilidad = new Elemento();
                 nuevo.Debilidad.Id = int.Parse(ddlDebilidad.SelectedValue);
 
-                //agrego el dato a la db: le paso el nuevo pokemon: Puedo usar el metodo agregar, o el que
-                //hace uso del procedimiento almacenado. En este caso se va a usar el del procedimiento almacenado
-                //y se va a comentar el agregar. Despues voy a dejar el de SP. Pero es mas bien para ejemplificar
-                //cualqueira sirve, y en un proyecto elijo el que mas me convenga
-                negocio.agregarConSP(nuevo);
-                //y vamos a la pantalla de redirect. 
+                //Le doy la funcionalidad al boton de agregar o modificar en la DB segun corresponda
+                //si viene por url un id distinto de nulo modifico, sino agrego
+                if (Request.QueryString["id"] != null)
+                {
+                    //tiene que tener precargado el id, de lo contrario no se acuatlizaran los datos.
+                    //si tiene el id en el formulario, es por que se apreto seleccionar
+                    nuevo.Id = int.Parse(txtId.Text);
+                    negocio.modificarConSP(nuevo);
+                }
+                else
+                {
+                    //agrego el dato a la db: 
+                    negocio.agregarConSP(nuevo);
+                }
+
+               
                 Response.Redirect("pokemonLista.aspx",false);
 
             }
@@ -108,7 +151,7 @@ namespace pokemon_web
             }
         }
 
-        //Para precargar la imagen en formulario
+        //precargar la imagen en formulario
         protected void txtImagenUrl_TextChanged(object sender, EventArgs e)
         {
             imgPokemon.ImageUrl = txtImagenUrl.Text;
