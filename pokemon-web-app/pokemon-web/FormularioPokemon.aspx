@@ -4,9 +4,7 @@
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
 
-    <%-- cuando utilizas el control <asp:UpdatePanel> en una página ASP.NET, 
-        también necesitas tener un <asp:ScriptManager> en la misma página para habilitar las actualizaciones parciales
-        y la funcionalidad de AJAX dentro del UpdatePanel. --%>
+
     <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
 
     <%-- Este es el formulario para dar de alta/modificar distintos pokemons. --%>
@@ -40,19 +38,9 @@
                 <label for="txtDescripcion" class="form-label">Descripcion:</label>
                 <asp:TextBox ID="txtDescripcion" TextMode="MultiLine" CssClass="form-control" runat="server" />
             </div>
-            <%--  El control UpdatePanel utiliza tecnología AJAX (Asynchronous JavaScript and XML) para permitir la comunicación
-                asíncrona entre el cliente y el servidor. Cuando ocurre un evento dentro del UpdatePanel, en lugar de realizar un 
-                postback completo y recargar toda la página, solo se envía al servidor la información necesaria para procesar ese 
-                evento específico. El servidor responde enviando de vuelta solo el contenido actualizado del UpdatePanel, y ese contenido 
-                se actualiza en el cliente de forma asincrónica sin afectar el resto de la página.--%>
             <asp:UpdatePanel runat="server">
                 <ContentTemplate>
                     <div class="mb-3">
-                        <%-- Al combinar estos dos atributos, AutoPostBack="true" y OnTextChanged="txtImagenUrl_TextChanged",
-                            se logra que, cuando el usuario escriba o modifique el contenido en el control de entrada de texto txtImagenUrl,
-                            se realice automáticamente un postback al servidor y se ejecute el evento txtImagenUrl_TextChanged en el servidor.
-                            Esto permite que se realice algún tipo de procesamiento adicional o actualización de la página en respuesta al cambio 
-                            en el texto de la URL de la imagen. --%>
                         <label for="txtImagenUrl" class="form-label">Url Imagen</label>
                         <asp:TextBox runat="server" ID="txtImagenUrl" CssClass="form-control"
                             AutoPostBack="true" OnTextChanged="txtImagenUrl_TextChanged" />
@@ -69,4 +57,28 @@
             <a href="pokemonLista.aspx" class="btn btn-danger">Cancelar</a>
         </div>
     </div>
+    <%-- Aca va ir la nueva columna  para el boton de eliminar. Podria ir junto a los otros tambien, es cuestion estetica.--%>
+    <div class="row">
+        <div class="col-6">
+            <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+                <ContentTemplate>
+                    <div class="mb-3">
+                        <asp:Button Text="Eliminar" CssClass="btn btn-danger" ID="btnEliminar" OnClick="btnEliminar_Click" runat="server" />
+                    </div>
+                    <%-- Confirmacion de la eliminacion. Si se cumple la condicion se muestra el nuevo campo: si confirmaEliminacion es verdadero
+                se va a mostrar el siguiente front de confirmacion: va a ser verdadero cuando se haga click en el boton eliminar--%>
+                    <%if (ConfirmaEliminacion)
+                        {%>
+                    <div class="mb-3">
+                        <asp:CheckBox Text="Confirmar Eliminación" ID="chkConfirmaEliminacion" runat="server" />
+                        <asp:Button Text="Eliminar" ID="btnConfirmaEliminar" OnClick="btnConfirmaEliminar_Click" CssClass="btn btn-outline-danger" runat="server" />
+                    </div>
+                    <%} %>
+                </ContentTemplate>
+            </asp:UpdatePanel>
+
+        </div>
+    </div>
+
+
 </asp:Content>

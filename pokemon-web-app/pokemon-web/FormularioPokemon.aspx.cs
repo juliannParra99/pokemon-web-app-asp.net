@@ -8,17 +8,27 @@ using System.Web.UI.WebControls;
 using dominio;
 using negocio;
 
-//en este ejemplo se va a m,odifica el formulario para que cuando queremos ingresar un nuevo pokemon podamos hacerlo
-//pero que cuando pulsemos en el boton 'modificar' se cargue el formulario con el id del pokemon seleccionado, para
-//asi precargar los valores y modificar aquello que queremos modificar. 
+//En  este ejemplo se realizara la funcion de eliminacion  fisica: Se agrega un boton de eliminar, el cual al ser
+//presionado habilitara una confirmacion que se dara mediante un checked (podria hacerse mediante una pantalla emergente
+//que pida confirmacion), y cuando se toque otro boton se produzca la eliminacion. La confirmacion nos garantiza evitar errores.
+
+//Recordar: La eliminacion fisica tiene que ser una situacion muy particular, donde no se manejen datos sensibles, por que puede ser un 
+//problema borrar esos valores definitivamente. Si se trabajo con registros de personas, sueldos,Facturas de comercios etc, no es recomendado.
+
+//A tener en cuenta: El elimanar tambien aparece en  la pantalla de agregar pokemo, por lo que no tiene mucho sentido dejarla en ese lugar.
+//ademas el eliminar utiliza el ID tambien, por lo que la funcionalidad ocurre cuando se toca en la la propiedad 'Seleccionar'
 
 namespace pokemon_web
 {
     public partial class FormularioPokemon : System.Web.UI.Page
     {
+        //propiedad para manejar la confirmacion de la eliminacion de los pokemons en el formulario
+        public bool ConfirmaEliminacion { get; set; }
         protected void Page_Load(object sender, EventArgs e)
         {
             txtId.Enabled = false;
+            //por defecto va a estar en false cuando cargue la pagina
+            ConfirmaEliminacion = false;
             try
             {
                 //Configuracion inicial de la pantalla
@@ -42,26 +52,9 @@ namespace pokemon_web
                     ddlDebilidad.DataBind();
                 }
 
-                //configuracion si estamos modificando. 
-
-                //pregunto si cuando se accede al formulario se lo hizo trayendo un id de  un pokemon en la url
-                //osea, si el query string tiene esa variable. Si la tiene es modificar.
-                //aca necesito el pokemon que coincide con el id para modificarlo; podria tener el objeto pokemon
-                //en Session pero no seria conveniente si manejo una gran cantidad de datos, asique lo manejo directamente 
-                //desde la db; traigo la lista de  datos de la db directamente
-
-                //si tiene ID voy a ir a la db a traer el listado de pokemons
-                //podria crear un metodo que me trajera el pokemon filtrando por id pero no viene al caso ahora.]
-                
-                //sigo en pokemonNegocio
-
 
                 //operador ternario: si viene con id lo guardo, sino lo dejo vacio
                 string id = Request.QueryString["id"] != null ? Request.QueryString["id"].ToString() : "" ;
-                //y tengo que agregarle que ejecuto la logica cuando no es postback, de lo contrario, cuando
-                //toque en un pokemon para modificar, y rellene con los datos actualizados, antes de que
-                //se ejecute el boton aceptar la pantalla va a ejecutar el postaback de nuevo con los datos
-                //originales, por lo que los datos seguirian siendo los mismos, cosa que no quiero.
                 if (id != "" && !IsPostBack)
                 {
                     PokemonNegocio negocio = new PokemonNegocio();
@@ -69,12 +62,6 @@ namespace pokemon_web
                     List<Pokemon> lista = negocio.listar(id);
                     //obtengo el pokemon de la lista, y como solo hya uno siempre va a estar en el indice 0
                     Pokemon seleccionado =lista[0];
-
-                    //OTRA MANERA DE HACER LO QUE HACEN LAS ULTIMAS DOS LINEAS Y HACERLO EN 1 SOLA SERIA 
-                    //por que se que negocio listar da una lista, entonces le digo directo el indice que quiero y lo asigno.
-                    //Pokemon seleccionado = (negocio.listar(id))[0]
-
-                    //precargar todos los campos del formulario de modificacion.
 
                     txtId.Text = id;
                     //le asigno los valrores del pokemon seleccionado.
@@ -155,6 +142,34 @@ namespace pokemon_web
         protected void txtImagenUrl_TextChanged(object sender, EventArgs e)
         {
             imgPokemon.ImageUrl = txtImagenUrl.Text;
+        }
+
+        //Eliminacion fisica
+        protected void btnEliminar_Click(object sender, EventArgs e)
+        {
+            ConfirmaEliminacion = true;
+        }
+
+        //confirma y ejecuta la eliminacion: En este caso voy a usar el metodo eliminar que ya tengo en PokemonNegocio, pero podria
+        //haerlo con storedProcedure tambien
+        protected void btnConfirmaEliminar_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                //si esta checkeado
+                if (chkConfirmaEliminacion.Checked)
+                {
+                    PokemonNegocio negocio = new PokemonNegocio();
+                    //el id que esta en el formulario del pokemon seleccionado
+                    negocio.eliminar(int.Parse(txtId.Text));
+                    Response.Redirect("pokemonLista.aspx");
+                }
+            }
+            catch (Exception ex)
+            {
+                Session.Add("error", ex);
+            }
+            
         }
     }
 }
