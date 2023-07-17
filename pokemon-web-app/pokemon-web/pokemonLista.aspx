@@ -17,6 +17,8 @@
             <asp:BoundField HeaderText="Numero" DataField="Numero" />
             <asp:BoundField HeaderText="Tipo" DataField="Tipo.Descripcion" />
             <asp:BoundField HeaderText="Debilidad" DataField="Debilidad.Descripcion" />
+            <%-- para ver el estado de activo o inactivo --%>
+            <asp:CheckBoxField  HeaderText="Activo" DataField="Activo"/>
 
             
             <asp:CommandField HeaderText="Acción" ShowSelectButton="true" SelectText="Editar"  />

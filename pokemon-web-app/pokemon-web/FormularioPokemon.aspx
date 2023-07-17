@@ -53,6 +53,7 @@
         </div>
         <div class="mb-3">
             <asp:Button Text="Aceptar" CssClass="btn btn-primary" ID="btnAceptar" OnClick="btnAceptar_Click" runat="server" />
+            <asp:button text="Inactivar" Id="btnInactivar" OnClick="btnInactivar_Click"  CssClass="btn btn-warning" runat="server" />
 
             <a href="pokemonLista.aspx" class="btn btn-danger">Cancelar</a>
         </div>
@@ -65,8 +66,7 @@
                     <div class="mb-3">
                         <asp:Button Text="Eliminar" CssClass="btn btn-danger" ID="btnEliminar" OnClick="btnEliminar_Click" runat="server" />
                     </div>
-                    <%-- Confirmacion de la eliminacion. Si se cumple la condicion se muestra el nuevo campo: si confirmaEliminacion es verdadero
-                se va a mostrar el siguiente front de confirmacion: va a ser verdadero cuando se haga click en el boton eliminar--%>
+                    
                     <%if (ConfirmaEliminacion)
                         {%>
                     <div class="mb-3">
