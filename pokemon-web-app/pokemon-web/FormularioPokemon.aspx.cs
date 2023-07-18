@@ -9,38 +9,14 @@ using dominio;
 using negocio;
 
 
-//Elimiancion logica de un registro:  dar de baja del registro pero no borrarlo de la base de datos; permite mantener el registro, y actualizar
-//un valor como inactivo, lo que va a hacer que aparezca o no.
-//La eliminacion logica es mas util pero requiere mas trabajo. Mientras los registros sean mas SENSIBLES, es mas recomendable usar eliminacion
-//logica
-//En mi DB tengo una columna llamadaa 'activo', que es de tipo bit (bool), que puedo usar para esto; guarda un 1 o 0
-//como la consulta que estamos usando solo muestra los que estan activos, los que no esten activos no se  mostraran
-
-//tambien se ppuede crear una manera de ver que elementos estan activos o inactivos y ver esa info; Para eso voy a hacer algunos ligeros cambios
-//en mi manejo de las consultas con la db
-
-
-//IMP IMP
-
-//Esto est util,por que por ejemplo en la vista de tarjetas quiero ver solo aquellos que esten activos, pero en el panel de administracion quiero
-//ver activos e inactivos, por ejemplo para ver cuando un articulo esta disponible o no en un e-commerce y poder hacer una reactivacion de ser
-//necesario
-
-//Hasta antes de esta seccion se utiliza esta consulta para listar los valores activos, con el stored procudere. 
-
-//ANTES: 
-//ALTER procedure[dbo].[storedListar] as
-//Select Numero, Nombre, P.Descripcion, UrlImagen, E.Descripcion Tipo, D.Descripcion Debilidad, P.IdTipo, P.IdDebilidad, P.Id 
-//From POKEMONS P, ELEMENTOS E, ELEMENTOS D 
-//Where E.Id = P.IdTipo And D.Id = P.IdDebilidad And P.Activo = 1
-
-//Ahora: Le quito de la ultima linea que solo traiga losa ctivos, y traigo la columna de p.Activo; Ademas le agrego la propiedad Activo al Pokemon
-
-//ALTER procedure[dbo].[storedListar] as
-//Select Numero, Nombre, P.Descripcion, UrlImagen, E.Descripcion Tipo, D.Descripcion Debilidad, P.IdTipo, P.IdDebilidad, P.Id, P.Activo 
-//From POKEMONS P, ELEMENTOS E, ELEMENTOS D 
-//Where E.Id = P.IdTipo And D.Id = P.IdDebilidad 
-
+//En este ejemplo se van A reactivar los valores que fueron dados de baja por ELIMINACION LOGICA.
+//La funcionalidd de Reactivar va a variar dependiendo de lo que estemos connstruyendo y se le pueden dar distintas funcionalidades: MODELO DE ESTADO
+// La reactivacion se va a hacer por un boton en el formulario.
+//
+// Ademas, voy  hacer que el nombre del boton inactivar cambie a 'activar' si el registro esta desactivado, y
+// voy a hacer algunas modificaciones en el eliminarLogico para que reactive o inactive segun el caso: Para esto voy a guardar en la session
+// el boton el pokemonSeleccionado para poder acceder rapidamente a el y manipularlo facilmente en este caso (como en otros futuros)
+//  y lo voy a usar en btnInactivar_Click, para pasarle los parametros eliminarLogico y que reactive o inactive segun el caso.)
 
 
 
@@ -87,9 +63,18 @@ namespace pokemon_web
                 {
                     PokemonNegocio negocio = new PokemonNegocio();
                     //obtengo la lista que va a tener un solo elemento y que viene desde el metodo listar()
+
+                    //En este punto me va a dar un error: Por que Listar filtra por los que estan ACTIVO, por que
+                    //aun no he cambiado la consulta, entonces no lo encuentra. Entonces tengo que sacar de esa
+                    //consulta en el metodo listar  esa parte por que esta filtrando por ACTIVO, y quiero 
+                    //reactivar los inactivos, pero no los encuentra.
                     List<Pokemon> lista = negocio.listar(id);
                     //obtengo el pokemon de la lista, y como solo hya uno siempre va a estar en el indice 0
                     Pokemon seleccionado =lista[0];
+
+                    //GUARDO POKEMON SELECCIONADO EN SESSION PARA DESPUES REFERENCIARLO DIRECTAMENTE CUANDO TENGA QUE HACER ALGUNA ACCION
+                    //guardo el objeto 'seleccionado'
+                    Session.Add("pokeSeleccionado", seleccionado);   
 
                     txtId.Text = id;
                     //le asigno los valrores del pokemon seleccionado.
@@ -105,15 +90,24 @@ namespace pokemon_web
                     //evento para que se precargue la iamgen: tambien en lugar de forzar el metodo podria ponerlo en un nuevo metodo
                     txtImagenUrl_TextChanged(sender, e);
 
+                    //CONFIGURAR ACCIONES.
+
+                    //cuando toque seleccionar un pokemon voy a estar realizando una modificacion asique voy a precargar los datos
+                    //Si el seleccionado no esta activo voy a cambiarle el nombre
+                    //si no esta activo, osea si esta en false, cambia el texto; sino lo dejo igual
+                    //tengo que modificar la consulta para que traiga la columna activo, sino no funcionara
+                    if (!seleccionado.Activo)
+                    {
+                        btnInactivar.Text = "Reactivar";
+                    }
                 }
 
-
             }
+
             catch (Exception ex )
             {
                 //puedo guardar el error en la session
                 Session.Add("error", ex);
-                throw ex;
             }
         }
 
@@ -203,8 +197,16 @@ namespace pokemon_web
             {
                 PokemonNegocio negocio = new PokemonNegocio();
 
+                //Recupero el pokemon de la session para pasarle los valroes al metoto eliminarLogico
+
+                Pokemon seleccionado = (Pokemon)Session["pokeSeleccionado"];
+                //otra alternativa seria evaluar si el  btnInactivar.Text del boton es Inactivar o Inactivar y  mandar un valor u otro
+                //al eliminarLogico()
+
                 //uso el eliminar logico de mi negocio y le paso el id que esta en el formulario
-                negocio.eliminarLogico(int.Parse(txtId.Text));
+                //OJ0: le mando de la propiedad ACTIVO el opuesto, para que pueda modificar lo opuesto: es decir, si esta activo, va a 
+                //poder desactivar, y si esta inactivo, va  apoder activar
+                negocio.eliminarLogico(seleccionado.Id, !seleccionado.Activo);
                 //aca podria hacer una validacion como en el eliminar fisico, pero en este caso no lo voy a hacer.
 
                 Response.Redirect("pokemonLista.aspx");
