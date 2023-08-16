@@ -8,17 +8,44 @@ using negocio;
 using dominio;
 
 
+//en esta seccion esta toda la administracion dura de la configuracion y datos de los pokemons, por lo que esta pantalla solo va a ser accesible
+//por alguien con el perfil ADMIN.No queremos que un usuario normal pueda modificar ni accedder esto. Entonces lo vamos a validar aqui a eso
+//Y preguntamos, tu sessiona activa, es Admin? 
+
+//Es lo mismo que hicimos von la seguridad en el amster page, pero como en este caso queremos solo configurar 1, lo puedo
+//hacer aca directamente
 
 namespace pokemon_web
 {
     public partial class pokemonLista : System.Web.UI.Page
     {
+
+         
+
+
         //para manejar el filtro avanzado
         public bool FiltroAvanzado{ get; set; }
         protected void Page_Load(object sender, EventArgs e)
         {
             //segun el chkAvanzado cambia el valor para mostrarlo
             FiltroAvanzado = chkAvanzado.Checked;
+
+            // Verificamos si el usuario actual no es un administrador (utilizando el método esAdmin de la clase Seguridad).
+
+            //este código se utiliza para controlar y restringir el acceso a una pantalla a los usuarios que tienen permisos de
+            //administrador.Si un usuario que no es administrador intenta acceder a la pantalla, se le redirige a una página 
+            //de error con un mensaje apropiado.
+
+            if (!Seguridad.esAdmin(Session["trainee"]))
+            {
+                // Si el usuario no es un administrador, almacenamos un mensaje de error en la sesión.
+                Session.Add("error", "Se requiere permisos de admin para acceder a esta pantalla");
+
+                // Redirigimos al usuario a la página de error (Error.aspx).
+                Response.Redirect("Error.aspx");
+            }
+
+
             if (!IsPostBack)
             {
                 PokemonNegocio negocio = new PokemonNegocio();
