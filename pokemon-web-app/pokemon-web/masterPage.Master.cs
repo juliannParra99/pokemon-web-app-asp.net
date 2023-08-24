@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using negocio;
-
+using dominio;
 
 namespace pokemon_web
 {
@@ -23,8 +23,8 @@ namespace pokemon_web
             //seria algo como :  si la pagina que va a contener el masterPage es la page Login, entonces...
             //Si la pagina que estoy por cargar no es login, entonces que chequee la seguridad
 
-             //para que se puedan ver El home, el registrarse y el login
-             //si no es ninguna de esas paginas va a redirigir al login para iniciar sesion
+            //para que se puedan ver El home, el registrarse y el login
+            //si no es ninguna de esas paginas va a redirigir al login para iniciar sesion
             if (!(Page is Login || Page is Registro || Page is _default))
             {
                 // Verificamos si no hay una sesión activa para el usuario en la variable de sesión "trainee".
@@ -34,6 +34,12 @@ namespace pokemon_web
                     Response.Redirect("Login.aspx", false);
                 }
             }
+
+            //Si hay una session activa de un usuario, le carga su  foto de perfil en la navbar.
+            if (Seguridad.sesionActiva(Session["trainee"]))
+                imgAvatar.ImageUrl = "~/Images/" + ((Trainee)Session["trainee"]).ImagenPerfil;
+            else
+                imgAvatar.ImageUrl = "https://simg.nicepng.com/png/small/202-2022264_usuario-annimo-usuario-annimo-user-icon-png-transparent.png";
 
 
         }
