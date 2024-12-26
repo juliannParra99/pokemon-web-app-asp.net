@@ -49,7 +49,7 @@ namespace pokemon_web
             if (!IsPostBack)
             {
                 PokemonNegocio negocio = new PokemonNegocio();
-                Session.Add("listaPokemons", negocio.listaConSP());
+                Session.Add("listaPokemons", negocio.listar());
                 dgvPokemons.DataSource = Session["listaPokemons"];
                 dgvPokemons.DataBind();
             }

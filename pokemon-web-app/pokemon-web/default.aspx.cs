@@ -19,7 +19,7 @@ namespace pokemon_web
             
             PokemonNegocio negocio = new PokemonNegocio();
 
-            ListaPokemon = negocio.listaConSP();
+            ListaPokemon = negocio.listar();
             
 
             //queremos que se cargue el repetidor si no es posback, osea solamente la primera vez que se ejecuta. 
